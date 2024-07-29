@@ -16,7 +16,7 @@ function CrearUsuarioForm({ errores, onChange, initialValues }) {
     }, [initialValues]);
 
     const validarPassword = (password) => {
-        const passwordContenido = /^(?=.*[A-Z])(?=.*\d.*\d)(?=.*[!@#$%^&*]).{8,}$/;
+        const passwordContenido = /^(?=.*[A-Z])(?=.*\d.*\d)(?=.*[!@#$%^&*]).{8,}$/;        
         return passwordContenido.test(password);
     }
 
@@ -50,7 +50,7 @@ function CrearUsuarioForm({ errores, onChange, initialValues }) {
 
     return (
         <Box mt={4}>
-            <Grid container spacing={2}>
+            <Grid container spacing={4}>
                 <Grid item xs={12} sm={6} md={6} lg={6}>
                     <TextField
                         fullWidth
@@ -79,7 +79,7 @@ function CrearUsuarioForm({ errores, onChange, initialValues }) {
                         required
                     />
                 </Grid>
-                <Grid item xs={12} sm={12} md={12} lg={12}>
+                <Grid item xs={12} sm={6} md={6} lg={6}>
                     <TextField
                         fullWidth
                         variant="standard"

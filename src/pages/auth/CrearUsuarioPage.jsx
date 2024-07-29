@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setIdUsuario, resetUsuario, setUsuario } from "../../states/crearUsuarioStore";
+import { setIdUsuario, resetUsuario, setUsuario } from "../../states/crearUsuarioSlice";
 import { CrearUsuarioForm } from "../../components/auth/CrearUsuarioForm";
 import { StepperComponente } from "../../components/common/stepper/Stepper";
 import axios from "axios";
 import { SIGNUP_POST_ENDPOINT, VERIFICARUSUARIO_POST_ENDPOINT } from "../../connections/helpers/endpoints";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useAlertas from "../../components/common/alertas/tipoAlertas";
 import { Box, TextField, Typography, Grid, Container, Button } from "@mui/material";
 import { BackdropProgreso } from "../../components/common/loading/BackdropProgreso";
@@ -16,80 +16,69 @@ function CrearUsuarioPage() {
     const [codigo, setCodigo] = useState(Array(6).fill(""));
     const dispatch = useDispatch();
     const navegar = useNavigate();
-    const location = useLocation();
     const crearUsuarioState = useSelector((estado) => estado.crearUsuario);
     const steps = ["Crear Cuenta", "Confirmar Correo", "Verificar Código"];
     const { alertaExito, alertaError } = useAlertas();
-
-    useEffect(() => {
-        if (!location.pathname.startsWith('/usuario/registrarse/')) {
-            dispatch(resetUsuario());
-            localStorage.removeItem('activeStep');
-        }
-    }, [location.pathname, dispatch]);
 
     const validarFormulario = ({ nombre, email, password }) => {
         const errores = {};
         if (!nombre) errores.nombre = "El nombre es obligatorio";
         if (!email) errores.email = "El correo electrónico es obligatorio";
-        if (!password) {
-            errores.password = "La contraseña es obligatoria";
-        } else if (!/^(?=.*[A-Z])(?=.*\d.*\d)(?=.*[!@#$%^&*]).{8,}$/.test(password)) {
-            errores.password = "La contraseña debe tener al menos 8 caracteres, una letra mayúscula, dos números y un carácter especial (*, $, &, #)";
-        }
+        if (!password) errores.password = "La contraseña es obligatoria";
+        if (!/^(?=.*[A-Z])(?=.*\d.*\d)(?=.*[!@#$%^&*]).{8,}$/.test(password)) errores.password = "La contraseña debe tener al menos 8 caracteres, una letra mayúscula, dos números y un carácter especial (*, $, &, #)";
         return errores;
     };
 
     const registro = async () => {
         setCargando(true);
-        try {
-            const response = await axios.post(SIGNUP_POST_ENDPOINT, {
-                nombre: crearUsuarioState.nombre,
-                email: crearUsuarioState.email,
-                password: crearUsuarioState.password,
-            }, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            });
+        return axios.post(SIGNUP_POST_ENDPOINT, {
+            nombre: crearUsuarioState.nombre,
+            email: crearUsuarioState.email,
+            password: crearUsuarioState.password,
+        }, {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }).then((response) => {
             setCargando(false);
             const idUsuario = response.data.usuarioEntity.idUsuario;
             dispatch(setIdUsuario(idUsuario));
             return true;
-        } catch (err) {
+            
+        }).catch((err) => {
             setCargando(false);
             const mensajeError = err.response?.data?.error || "Ocurrió un error al crear la cuenta de usuario.";
             alertaError(mensajeError);
             return false;
-        }
+        });
     };
 
     const verificarCodigo = async () => {
         setCargando(true);
-        try {
-            const codigoCompleto = codigo.join("");
-            await axios.post(VERIFICARUSUARIO_POST_ENDPOINT, {
-                idUsuario: crearUsuarioState.idUsuario,
-                codigo: codigoCompleto
-            }, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            });
+        const codigoCompleto = codigo.join("");
+        return axios.post(VERIFICARUSUARIO_POST_ENDPOINT, {
+            idUsuario: crearUsuarioState.idUsuario,
+            codigo: codigoCompleto
+        }, {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }).then(() => {
             setCargando(false);
             dispatch(resetUsuario());
-            localStorage.removeItem('activeStep');
+            localStorage.clear();
             navegar("/");
             alertaExito("Usuario verificado exitosamente.");
             return true;
-        } catch (err) {
+
+        }).catch((err) => {
             setCargando(false);
             const mensajeError = err.response?.data?.error || "Ocurrió un error al verificar la cuenta de usuario.";
             alertaError(mensajeError);
             return false;
-        }
+        });
     };
 
     const handleNextStep = async (activeStep) => {
@@ -99,12 +88,15 @@ function CrearUsuarioPage() {
                 setErrores(newErrores);
                 return false;
             } else {
+                setErrores({});
                 return true;
             }
         } else if (activeStep === 1) {
-            return await registro();
+            const registroExitoso = await registro();
+            return registroExitoso;
         } else if (activeStep === 2) {
-            return await verificarCodigo();
+            const verificacionExitosa = await verificarCodigo();
+            return verificacionExitosa;
         }
         return true;
     };
@@ -115,7 +107,6 @@ function CrearUsuarioPage() {
             newCodigo[index] = value;
             setCodigo(newCodigo);
 
-            // Mover el cursor automáticamente al siguiente campo si el valor es un número
             if (value && index < codigo.length - 1) {
                 const nextInput = document.getElementById(`codigo-${index + 1}`);
                 if (nextInput) {
@@ -165,8 +156,9 @@ function CrearUsuarioPage() {
             case 1:
                 return (
                     <Box textAlign="center">
-                        <Typography variant="h5" mt={10} mb={2}>Confirmar correo electrónico</Typography>
-                        <Typography variant="body1" color="text.secondary">Se va a enviar un código de verificación al correo {crearUsuarioState.email}.</Typography>
+                        <Typography variant="h5" mt={7} mb={2}>Confirmar correo electrónico</Typography>
+                        <Typography variant="h6" color="text.secondary" gutterBottom>Se va a enviar un código de verificación al siguiente correo:</Typography>
+                        <Typography variant="h6" sx={{color: 'purple', fontWeight: 'bold'}} gutterBottom>{crearUsuarioState.email}</Typography>
                     </Box>
                 );
             case 2:
@@ -184,7 +176,8 @@ function CrearUsuarioPage() {
                                     key={index}
                                     id={`codigo-${index}`}
                                     variant="outlined"
-                                    inputProps={{ maxLength: 1, style: { textAlign: 'center', width: '2em' } }}
+                                    autoComplete="off"
+                                    inputProps={{ maxLength: 1, style: { textAlign: 'center', width: '2em' }}}
                                     value={value}
                                     onChange={(e) => handleCodigoChange(index, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(index, e)}
@@ -195,9 +188,15 @@ function CrearUsuarioPage() {
                         </Box>
                         <Box textAlign="center">
                             <Typography variant="h6" color="text.secondary" mt={5} mb={1}>¿No te llegó el código?</Typography>
-                            <Button variant="contained" color="secondary"
-                                size="large" sx={{ borderRadius: 5 }}>
-                                Reenviar código</Button>
+                            <Button 
+                                variant="contained" 
+                                color="secondary" 
+                                size="large" 
+                                sx={{ borderRadius: 5 }}
+                                onClick={registro}
+                            >
+                                Reenviar código
+                            </Button>
                         </Box>
                     </>
                 );
@@ -209,15 +208,9 @@ function CrearUsuarioPage() {
     return (
         <Container>
             <BackdropProgreso abrir={cargando} />
-            <Box 
-                mt={4} 
-                display="flex" 
-                justifyContent="center" 
-                alignItems="center" 
-                minHeight="70vh"
-            >
+            <Box mt={4} display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
                 <Grid container spacing={4} justifyContent="center">
-                    <Grid item xs={12} sm={11} md={8} lg={8}>
+                    <Grid item xs={12} sm={11} md={11} lg={12}>
                         <StepperComponente steps={steps} onNextStep={handleNextStep} orientation="horizontal">
                             {(activeStep) => renderStepContent(activeStep)}
                         </StepperComponente>

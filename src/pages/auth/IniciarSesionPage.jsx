@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Container, Box, Typography, Button } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { IniciarSesionForm } from "../../components/auth/IniciarSesionForm";
 import { autenticacion } from "../../connections/usuarioAcciones";
 import { BackdropProgreso } from "../../components/common/loading/BackdropProgreso";
@@ -11,15 +11,9 @@ import { Login } from "@mui/icons-material";
 function IniciarSesionPage() {
     const [errores, setErrores] = useState({});
     const [cargando, setCargando] = useState(false);
-    const conectado = useSelector((estado) => estado.usuario.conectado);
     const navegar = useNavigate();
     const enviarAccion = useDispatch();
     const { alertaError } = useAlertas();
-
-    
-    useEffect(() => {
-        if(conectado) navegar("/")
-    }, [conectado, navegar]);
 
     const iniciarSesion = ({ email, password }) => {
         const mensaje = {};
@@ -73,7 +67,7 @@ function IniciarSesionPage() {
                     <Typography variant="subtitle1" color="text.secondary" textAlign="center">
                         ¿No tienes una cuenta? 
                         <Button 
-                            size="large"
+                            size="medium"
                             color="secondary"
                             variant="contained"
                             sx={{ ml: 1, borderRadius: 5 }}
