@@ -2,29 +2,25 @@ import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Stepper, Step, StepLabel, Button, Box } from "@mui/material";
 
-function StepperComponente({ steps, onNextStep, children, orientation = "horizontal" }) {
-    const [activeStep, setActiveStep] = useState(() => {
-        const savedStep = localStorage.getItem('activeStep');
+function StepperComponente({ steps, onSiguienteStep, children, orientacion = "horizontal" }) {
+    const [stepActivo, setStepActivo] = useState(() => {
+        const savedStep = localStorage.getItem('stepActivo');
         return savedStep !== null ? Number(savedStep) : 0;
     });
 
     useEffect(() => {
-        localStorage.setItem('activeStep', activeStep);
-    }, [activeStep]);
+        localStorage.setItem('stepActivo', stepActivo);
+    }, [stepActivo]);
 
-    const handleNext = async () => {
-        if (await onNextStep(activeStep)) {
-            setActiveStep((prevActiveStep) => prevActiveStep + 1);
-        }
+    const handleSiguienteStep = async () => {
+        if (await onSiguienteStep(stepActivo)) setStepActivo((preStepActivo) => preStepActivo + 1);
     };
 
-    const handleBack = () => {
-        setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    };
+    const handleDevolverStep = () => setStepActivo((preStepActivo) => preStepActivo - 1);
 
     return (
         <Box flexDirection="column" alignItems="center">
-            <Stepper activeStep={activeStep} orientation={orientation}>
+            <Stepper activeStep={stepActivo} orientation={orientacion}>
                 {steps.map((label, index) => (
                     <Step key={index}>
                         <StepLabel>{label}</StepLabel>
@@ -32,13 +28,13 @@ function StepperComponente({ steps, onNextStep, children, orientation = "horizon
                 ))}
             </Stepper>
             <Box mt={2} width="100%">
-                {children(activeStep)}
+                {children(stepActivo)}
                 <Box mt={5} display="flex" justifyContent="space-between">
-                    <Button disabled={activeStep === 0} onClick={handleBack}>
+                    <Button disabled={stepActivo === 0} onClick={handleDevolverStep}>
                         Atrás
                     </Button>
-                    <Button variant="contained" color="secondary" onClick={handleNext}>
-                        {activeStep === steps.length - 1 ? "Finalizar" : "Siguiente"}
+                    <Button variant="contained" color="secondary" onClick={handleSiguienteStep}>
+                        {stepActivo === steps.length - 1 ? "Finalizar" : "Siguiente"}
                     </Button>
                 </Box>
             </Box>
@@ -48,9 +44,9 @@ function StepperComponente({ steps, onNextStep, children, orientation = "horizon
 
 StepperComponente.propTypes = {
     steps: PropTypes.array.isRequired,
-    onNextStep: PropTypes.func.isRequired,
+    onSiguienteStep: PropTypes.func.isRequired,
     children: PropTypes.func.isRequired,
-    orientation: PropTypes.string
-};
+    orientacion: PropTypes.string
+}
 
 export { StepperComponente }
