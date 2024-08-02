@@ -1,13 +1,13 @@
-import { TextField, Box, Grid, Typography } from "@mui/material";
+import { Box, Grid, TextField } from "@mui/material";
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import CorreoFormulario from "../forms/CorreoFormulario";
+import ContrasenaFormulario from "../forms/ContrasenaFormulario";
 
 function CrearUsuarioForm({ errores, onChange, initialValues }) {
     const [nombre, setNombre] = useState(initialValues.nombre || "");
     const [email, setEmail] = useState(initialValues.email || "");
     const [password, setPassword] = useState(initialValues.password || "");
-    const [passwordMensaje, setPasswordMensaje] = useState("");
-    const [passwordColor, setPasswordMensajeColor] = useState("");
 
     useEffect(() => {
         setNombre(initialValues.nombre || "");
@@ -15,36 +15,13 @@ function CrearUsuarioForm({ errores, onChange, initialValues }) {
         setPassword(initialValues.password || "");
     }, [initialValues]);
 
-    const validarPassword = (password) => {
-        const passwordContenido = /^(?=.*[A-Z])(?=.*\d.*\d)(?=.*[!@#$%^&*]).{8,}$/;        
-        return passwordContenido.test(password);
-    }
-
-    const handlePasswordCambiarColorLetra = (event) => {
-        const nuevaPassword = event.target.value;
-        setPassword(nuevaPassword);
-
-        if (validarPassword(nuevaPassword)) {
-            setPasswordMensaje("Contraseña segura.");
-            setPasswordMensajeColor("green");
-        } else {
-            setPasswordMensaje("Contraseña insegura. Debe tener al menos 8 caracteres, una letra mayúscula, dos números y un carácter especial (*, $, &, #).");
-            setPasswordMensajeColor("red");
-        }
-
+    const handleChange = (setter, fieldName) => (event) => {
+        const value = event.target.value;
+        setter(value);
         onChange({
-            nombre,
-            email,
-            password: nuevaPassword
-        });
-    }
-
-    const handleChange = (setter) => (event) => {
-        setter(event.target.value);
-        onChange({
-            nombre: event.target.name === "nombre" ? event.target.value : nombre,
-            email: event.target.name === "email" ? event.target.value : email,
-            password: event.target.name === "password" ? event.target.value : password
+            nombre: fieldName === "nombre" ? value : nombre,
+            email: fieldName === "email" ? value : email,
+            password: fieldName === "password" ? value : password,
         });
     };
 
@@ -59,60 +36,52 @@ function CrearUsuarioForm({ errores, onChange, initialValues }) {
                         label="Nombre"
                         name="nombre"
                         value={nombre}
-                        onChange={handleChange(setNombre)}
+                        onChange={handleChange(setNombre, "nombre")}
                         error={!!errores.nombre}
                         helperText={errores.nombre}
                         required
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={6} lg={6}>
-                    <TextField
-                        fullWidth
-                        variant="standard"
-                        type="email"
-                        label="Correo electrónico"
-                        name="email"
-                        value={email}
-                        onChange={handleChange(setEmail)}
-                        error={!!errores.email}
+                    <CorreoFormulario
+                        email={email}
+                        onChange={(email) => {
+                            setEmail(email);
+                            onChange({ nombre, email, password });
+                        }}
+                        error={errores.email}
                         helperText={errores.email}
-                        required
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={6} lg={6}>
-                    <TextField
-                        fullWidth
-                        variant="standard"
-                        type="password"
-                        label="Contraseña"
-                        name="password"
-                        value={password}
-                        onChange={handlePasswordCambiarColorLetra}
-                        error={!!errores.password}
+                    <ContrasenaFormulario
+                        password={password}
+                        onChange={(value) => {
+                            setPassword(value);
+                            onChange({ nombre, email, password: value });
+                        }}
+                        error={errores.password}
                         helperText={errores.password}
-                        required
+                        label="Contraseña"
                     />
-                    <Typography variant="body2" style={{ color: passwordColor }}>
-                        {passwordMensaje}
-                    </Typography>
                 </Grid>
             </Grid>
         </Box>
-    )
+    );
 }
 
 CrearUsuarioForm.propTypes = {
     errores: PropTypes.shape({
         nombre: PropTypes.string,
         email: PropTypes.string,
-        password: PropTypes.string
+        password: PropTypes.string,
     }).isRequired,
     onChange: PropTypes.func.isRequired,
     initialValues: PropTypes.shape({
         nombre: PropTypes.string,
         email: PropTypes.string,
-        password: PropTypes.string
+        password: PropTypes.string,
     }).isRequired,
-}
+};
 
 export { CrearUsuarioForm }

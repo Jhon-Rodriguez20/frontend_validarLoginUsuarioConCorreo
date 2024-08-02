@@ -11,21 +11,18 @@ const crearUsuarioSlice = createSlice({
     name: 'crearUsuario',
     initialState,
     reducers: {
-        setUsuario: (state, action) => {
+        setUsuario(state, action) {
             state.nombre = action.payload.nombre;
             state.email = action.payload.email;
             state.password = action.payload.password;
         },
-        setIdUsuario: (state, action) => {
+        setIdUsuario(state, action) {
             state.idUsuario = action.payload;
         },
-        resetUsuario: (state) => {
-            state.nombre = '';
-            state.email = '';
-            state.password = '';
-            state.idUsuario = null;
-        },
-    },
+        resetUsuario() {
+            return initialState;
+        }
+    }
 });
 
 export const { setUsuario, setIdUsuario, resetUsuario } = crearUsuarioSlice.actions;

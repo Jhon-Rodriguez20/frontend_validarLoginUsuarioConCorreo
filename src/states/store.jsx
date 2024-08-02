@@ -4,16 +4,18 @@ import storage from "redux-persist/lib/storage";
 import { combineReducers } from "redux";
 import usuarioReducer from "./sliceReducers";
 import crearUsuarioReducer from "./crearUsuarioSlice";
+import recuperarContrasenaReducer from "./recuperarContrasenaSlice";
 
 const persistConfig = {
     key: "root",
     storage,
-    whitelist: ["usuario", "crearUsuario"],
+    whitelist: ["usuario", "crearUsuario", "recuperarContrasena"],
 };
 
 const rootReducer = combineReducers({
     usuario: usuarioReducer,
     crearUsuario: crearUsuarioReducer,
+    recuperarContrasena: recuperarContrasenaReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

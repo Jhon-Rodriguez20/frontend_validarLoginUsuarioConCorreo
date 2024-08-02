@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Container, Box, Grid } from "@mui/material";
 import { BackdropProgreso } from "../../components/common/loading/BackdropProgreso";
 import { StepperComponente } from "../../components/common/stepper/Stepper";
-import StepperContenido from "../../components/common/stepper/StepperContenido";
+import StepperContenidoCrearUsuario from "../../components/common/stepper/contenidosDeSteppers/StepperContenidoCrearUsuario";
 import axios from "axios";
-import { SIGNUP_POST_ENDPOINT, VERIFICARUSUARIO_POST_ENDPOINT } from "../../connections/helpers/endpoints";
+import { SIGNUP_POST_ENDPOINT, VERIFICAR_USUARIO_POST_ENDPOINT } from "../../connections/helpers/endpoints";
 import useAlertas from "../../components/common/alertas/tipoAlertas";
 import { useSelector, useDispatch } from "react-redux";
 import { setIdUsuario, resetUsuario } from "../../states/crearUsuarioSlice";
@@ -48,7 +48,7 @@ function CrearUsuarioPage() {
     const verificarCodigo = async () => {
         setCargando(true);
         const codigoCompleto = codigo.join("");
-        return axios.post(VERIFICARUSUARIO_POST_ENDPOINT, {
+        return axios.post(VERIFICAR_USUARIO_POST_ENDPOINT, {
             idUsuario: crearUsuarioState.idUsuario,
             codigo: codigoCompleto
         }, { headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
@@ -56,7 +56,7 @@ function CrearUsuarioPage() {
         }).then(() => {
             setCargando(false);
             dispatch(resetUsuario());
-            localStorage.clear();
+            localStorage.removeItem('stepActivo');
             navegar("/");
             alertaExito("Usuario verificado exitosamente.");
             return true;
@@ -69,7 +69,7 @@ function CrearUsuarioPage() {
         });
     };
 
-    const stepperFunciones = StepperContenido({
+    const stepperFunciones = StepperContenidoCrearUsuario({
         setCargando, setErrores, setCodigo, errores,
         codigo, registro, verificarCodigo
     });

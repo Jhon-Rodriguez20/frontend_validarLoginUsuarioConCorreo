@@ -4,8 +4,8 @@ import { Stepper, Step, StepLabel, Button, Box } from "@mui/material";
 
 function StepperComponente({ steps, onSiguienteStep, children, orientacion = "horizontal" }) {
     const [stepActivo, setStepActivo] = useState(() => {
-        const savedStep = localStorage.getItem('stepActivo');
-        return savedStep !== null ? Number(savedStep) : 0;
+        const stepGuardado = localStorage.getItem('stepActivo');
+        return stepGuardado !== null ? Number(stepGuardado) : 0;
     });
 
     useEffect(() => {
@@ -13,7 +13,8 @@ function StepperComponente({ steps, onSiguienteStep, children, orientacion = "ho
     }, [stepActivo]);
 
     const handleSiguienteStep = async () => {
-        if (await onSiguienteStep(stepActivo)) setStepActivo((preStepActivo) => preStepActivo + 1);
+        const puedeContinuar = await onSiguienteStep(stepActivo);
+        if (puedeContinuar) setStepActivo((preStepActivo) => preStepActivo + 1);
     };
 
     const handleDevolverStep = () => setStepActivo((preStepActivo) => preStepActivo - 1);
@@ -30,7 +31,7 @@ function StepperComponente({ steps, onSiguienteStep, children, orientacion = "ho
             <Box mt={2} width="100%">
                 {children(stepActivo)}
                 <Box mt={5} display="flex" justifyContent="space-between">
-                    <Button disabled={stepActivo === 0} onClick={handleDevolverStep}>
+                    <Button variant="outlined" color="secondary" disabled={stepActivo === 0} onClick={handleDevolverStep}>
                         Atrás
                     </Button>
                     <Button variant="contained" color="secondary" onClick={handleSiguienteStep}>

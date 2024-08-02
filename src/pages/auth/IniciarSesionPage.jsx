@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Container, Box, Typography, Button } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -7,6 +7,7 @@ import { autenticacion } from "../../connections/usuarioAcciones";
 import { BackdropProgreso } from "../../components/common/loading/BackdropProgreso";
 import useAlertas from "../../components/common/alertas/tipoAlertas";
 import { Login } from "@mui/icons-material";
+import { resetUsuario } from "../../states/crearUsuarioSlice";
 
 function IniciarSesionPage() {
     const [errores, setErrores] = useState({});
@@ -14,6 +15,11 @@ function IniciarSesionPage() {
     const navegar = useNavigate();
     const enviarAccion = useDispatch();
     const { alertaError } = useAlertas();
+
+    useEffect(() => {
+        localStorage.clear();
+        enviarAccion(resetUsuario());
+    }, [enviarAccion]);
 
     const iniciarSesion = ({ email, password }) => {
         const mensaje = {};
@@ -63,7 +69,10 @@ function IniciarSesionPage() {
                     ¡Bienvenido de nuevo!
                 </Typography>
                 <IniciarSesionForm errores={errores} callback={iniciarSesion} />
-                <Box mt={9}>
+                <Box display="flex" justifyContent="center" mt={3}>
+                    <Link to={"/recuperar/contraseña"} className="link-pagina">¿Olvidaste tu contraseña?</Link>
+                </Box>
+                <Box mt={7}>
                     <Typography variant="subtitle1" color="text.secondary" textAlign="center">
                         ¿No tienes una cuenta? 
                         <Button 
